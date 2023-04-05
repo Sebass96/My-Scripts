@@ -1,0 +1,112 @@
+---
+title: "Manejo de datos"
+author: "Sebastian_Casas"
+date: '2023-03-27'
+output: html_document
+editor_options: 
+  chunk_output_type: console
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+library(tidyverse)
+library(palmerpenguins)
+```
+
+```{r}
+dfpenguins <- penguins
+```
+
+```{r}
+# Selecion de columnas
+
+dfpenguins %>%
+  select(species, island, sex)
+  
+```
+
+```{r}
+# Seleccion de filas
+
+dfpenguins %>%
+  select(species, island, sex) %>% 
+  filter(sex == "male")
+
+dfpenguins %>%
+  select(species, island, sex) %>% 
+  filter(sex == "male") %>% 
+  select(-island)
+  
+```
+
+```{r}
+# Crear columna
+
+dfpenguins %>% 
+  filter(sex == "female") %>% 
+mutate(bill_length_mm_2 = bill_length_mm^2,
+       flipper_length_mm_mitad = flipper_length_mm/2) %>% 
+  select(bill_length_mm, bill_length_mm_2, flipper_length_mm, flipper_length_mm_mitad)
+
+```
+
+```{r}
+# Agrupar
+
+dfpenguins %>% 
+  group_by(species) %>% 
+  mutate(prom_long_pico = mean(bill_length_mm, na.rm = T),
+         long_menos_prom = bill_length_mm - prom_long_pico) %>% 
+  select(species, bill_length_mm, prom_long_pico, long_menos_prom)
+
+
+```
+
+```{r}
+# Summarise
+
+dfpenguins %>% 
+  group_by(species) %>% 
+  summarise(prom_long_pico = mean(bill_length_mm, na.rm = T))
+
+dfpenguins %>% 
+  group_by(species, island) %>% 
+  summarise(prom_long_pico = mean(bill_length_mm, na.rm = T),
+            desv_long_pico = sd(bill_length_mm, na.rm = T)) %>% 
+  ungroup()
+
+
+```
+
+```{r}
+# Ordenamiento
+
+dfpenguins %>% 
+  arrange(species, island, -year)
+```
+
+```{r}
+# Contar
+
+dfpenguins %>% 
+  count(species, name = "frecuencia") %>% 
+  arrange(-frecuencia)
+
+dfpenguins %>% 
+  count(species, island)
+
+
+```
+
+```{r}
+# Tabla de doble entrada
+
+dfpenguins %>% 
+  count(species, island) %>% 
+  spread(key = "island",
+         value = "n", fill = 0)
+```
+
