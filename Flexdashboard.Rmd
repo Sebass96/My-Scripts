@@ -1,0 +1,104 @@
+---
+title: "Explora la copa mundial FIFA desde el 1930-2014 ⚽"
+output: 
+  flexdashboard::flex_dashboard:
+    theme:
+      version: 4
+      bootswatch: sketchy
+      base_font:
+        google: Prompt
+      code_font:
+        google: JetBrains Mono
+    orientation: columns
+    vertical_layout: fill
+---
+
+```{r setup, include=FALSE}
+library(flexdashboard)
+library(here)
+library(tidyverse)
+library(plotly)
+library(readxl)
+library(DT)
+thematic::thematic_rmd(font = "auto")
+
+setwd("C:/Users/pc/Desktop/Diseños Experimentales/R_Shiny")
+
+partidos <- read_excel("WorldCupsMatches.xlsx")
+jugadores <- read.csv("WorldCupPlayers.csv")
+copas <- read_excel("WorldCups.xlsx")
+
+head(jugadores)
+head(partidos)
+
+
+# Install thematic and un-comment for themed static plots (i.e., ggplot2)
+# thematic::thematic_rmd()
+```
+
+Column {data-width=650 .tabset}
+-----------------------------------------------------------------------
+
+### 🏆 Los campeones del mundial
+
+```{r}
+
+ggplotly(copas %>% 
+  mutate(Winner = case_when(Winner == "Germany FR" ~ "Germany",
+                            TRUE ~ Winner)) %>% 
+  count(Winner) %>% 
+  ggplot(aes(x=reorder(Winner,n), y=n)) +
+    geom_col() +
+    xlab("Campeón") +
+    ylab("Número de copas") +
+    theme_minimal()) 
+```
+
+### ⚽ Número de goles
+
+```{r}
+
+ggplotly(copas %>% 
+  ggplot(aes(x=Year, y=GoalsScored)) +
+    geom_line() +
+    geom_point() +
+    theme_minimal())
+
+```
+
+
+### 🏅Países en los top 4
+
+```{r}
+
+ggplotly(copas %>% 
+  select(Winner:Fourth) %>% 
+  pivot_longer(cols=Winner:Fourth, names_to="lugar", values_to="pais") %>% 
+  mutate(pais = case_when(pais == "Germany FR" ~ "Germany",
+                            TRUE ~ pais)) %>% 
+  count(pais) %>% 
+  ggplot(aes(x=reorder(pais,n), y=n)) +
+    geom_col() +
+    xlab("País") +
+    ylab("Número de lugares") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 45)))
+```
+
+### 🗒️Explora y descarga los datos
+
+```{r}
+
+datatable(copas,
+          extensions = "Buttons", 
+            options = list(dom = "Bfrtip", 
+                           buttons = (list(
+                             "copy", list(
+                               extend = "collection", 
+                               buttons = c("csv", "excel"), 
+                               text = "Download")))), 
+            rownames = F, 
+            filter = "top")
+
+```
+
